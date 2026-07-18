@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="JobFinder — a job-search engine that reads ATS APIs directly, scores postings with a local LLM, and delivers a ranked digest before the crowd arrives. An engineering case study by Guy.">
+<title>Guy · JobFinder — reading the job market at the source</title>
+</head>
+<body>
+<style>
+  /* ============================================================
+     TOKENS — light is default, dark redefines, data-theme wins
+     ============================================================ */
+  :root {
+    --bg:        #F7F5F1;
+    --surface:   #FFFFFF;
+    --surface-2: #EFECE5;
+    --border:    #E0DBD1;
+    --ink:       #22303F;
+    --ink-2:     #5B6774;
+    --ink-3:     #8B95A0;
+    --accent:    #A85E14;
+    --accent-soft: #A85E141F;
+    --link:      #1F6E8C;
+    --ok:        #1E7D4F;
+
+    /* terminal is a committed dark object in both themes */
+    --t-bg:     #0C1219;
+    --t-chrome: #151E29;
+    --t-border: #26313F;
+    --t-ink:    #D7E0EA;
+    --t-dim:    #64758A;
+    --t-ok:     #46C280;
+    --t-amber:  #F0A24B;
+    --t-cyan:   #62B6D9;
+
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --wrap: 960px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:        #0E141C;
+      --surface:   #151D27;
+      --surface-2: #1B2531;
+      --border:    #263242;
+      --ink:       #E7EDF4;
+      --ink-2:     #97A6B7;
+      --ink-3:     #64758A;
+      --accent:    #E8913A;
+      --accent-soft: #E8913A24;
+      --link:      #62B6D9;
+      --ok:        #46C280;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:        #0E141C;
+    --surface:   #151D27;
+    --surface-2: #1B2531;
+    --border:    #263242;
+    --ink:       #E7EDF4;
+    --ink-2:     #97A6B7;
+    --ink-3:     #64758A;
+    --accent:    #E8913A;
+    --accent-soft: #E8913A24;
+    --link:      #62B6D9;
+    --ok:        #46C280;
+  }
+  :root[data-theme="light"] {
+    --bg:        #F7F5F1;
+    --surface:   #FFFFFF;
+    --surface-2: #EFECE5;
+    --border:    #E0DBD1;
+    --ink:       #22303F;
+    --ink-2:     #5B6774;
+    --ink-3:     #8B95A0;
+    --accent:    #A85E14;
+    --accent-soft: #A85E141F;
+    --link:      #1F6E8C;
+    --ok:        #1E7D4F;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- type roles ---------- */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1, h2 {
+    font-family: var(--mono);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.18;
+    text-wrap: balance;
+    margin: 0;
+  }
+  h1 { font-size: clamp(27px, 4.6vw, 46px); }
+  h2 { font-size: clamp(21px, 3vw, 29px); }
+  .prose { max-width: 68ch; color: var(--ink-2); }
+  .prose strong { color: var(--ink); }
+  section { padding: 72px 0 0; }
+
+  /* ---------- header ---------- */
+  header.site {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 26px 0 0;
+    font-family: var(--mono); font-size: 14px;
+  }
+  header.site .who b { color: var(--ink); font-weight: 700; }
+  header.site .who span { color: var(--ink-3); }
+  header.site nav { display: flex; align-items: center; gap: 18px; }
+  #themeBtn {
+    font-family: var(--mono); font-size: 12px;
+    background: none; border: 1px solid var(--border); color: var(--ink-2);
+    border-radius: 999px; padding: 4px 12px; cursor: pointer;
+  }
+  #themeBtn:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  /* ---------- hero ---------- */
+  .hero { padding-top: 72px; }
+  .hero h1 em { font-style: normal; color: var(--accent); }
+  .hero .sub { margin: 22px 0 0; font-size: 18px; }
+
+  /* ---------- terminal ---------- */
+  .term {
+    margin-top: 44px;
+    background: var(--t-bg);
+    border: 1px solid var(--t-border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -28px rgba(3, 10, 18, .55);
+  }
+  .term-chrome {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--t-chrome);
+    border-bottom: 1px solid var(--t-border);
+    padding: 10px 14px;
+  }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dot.r { background: #E5564F; } .dot.y { background: #E0A63C; } .dot.g { background: #57B865; }
+  .term-title {
+    flex: 1; text-align: center;
+    font-family: var(--mono); font-size: 12px; color: var(--t-dim);
+  }
+  #replayBtn {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    background: none; border: 1px solid var(--t-border); color: var(--t-dim);
+    border-radius: 5px; padding: 3px 10px; cursor: pointer;
+  }
+  #replayBtn:hover { color: var(--t-ink); border-color: var(--t-dim); }
+  .term-body {
+    padding: 18px 4px 22px 20px;
+    overflow-x: auto;
+    min-height: 520px;
+  }
+  #screen {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--t-ink);
+    white-space: pre;
+    margin: 0;
+  }
+  #screen .ok    { color: var(--t-ok); }
+  #screen .amber { color: var(--t-amber); }
+  #screen .cyan  { color: var(--t-cyan); }
+  #screen .dim   { color: var(--t-dim); }
+  #screen .hd    { color: var(--t-ink); font-weight: 700; }
+  .cursor {
+    display: inline-block; width: 8px; height: 15px;
+    background: var(--t-amber); vertical-align: -2px;
+    animation: blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ---------- pipeline ---------- */
+  .pipe { margin-top: 40px; display: grid; gap: 0; }
+  .stage {
+    display: grid; grid-template-columns: 56px 1fr; gap: 0 18px;
+    position: relative; padding-bottom: 26px;
+  }
+  .stage:last-child { padding-bottom: 0; }
+  .stage::before {           /* connector rail */
+    content: ""; position: absolute; left: 27px; top: 34px; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .stage:last-child::before { display: none; }
+  .stage .node {
+    width: 56px; height: 30px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--border);
+    display: grid; place-items: center;
+    font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 700;
+  }
+  .stage .body { padding-top: 3px; }
+  .stage .name { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--ink); }
+  .stage .desc { color: var(--ink-2); font-size: 15px; max-width: 62ch; margin-top: 2px; }
+  .stage .tags { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-family: var(--mono); font-size: 11.5px;
+    background: var(--surface-2); border: 1px solid var(--border);
+    color: var(--ink-2); border-radius: 4px; padding: 2px 8px;
+  }
+
+  /* ---------- detail cards ---------- */
+  .cards { margin-top: 36px; display: grid; gap: 14px; }
+  details.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  details.card[open] { background: var(--surface-2); }
+  details.card summary {
+    list-style: none; cursor: pointer;
+    display: flex; align-items: baseline; gap: 14px;
+    padding: 18px 20px;
+  }
+  details.card summary::-webkit-details-marker { display: none; }
+  details.card summary .plus {
+    font-family: var(--mono); color: var(--accent); font-weight: 700;
+    transition: transform .2s ease; flex: none;
+  }
+  details.card[open] summary .plus { transform: rotate(45deg); }
+  details.card summary h3 {
+    font-family: var(--mono); font-size: 16px; margin: 0; letter-spacing: -.01em;
+  }
+  details.card summary .tease { color: var(--ink-3); font-size: 14px; margin-left: auto; text-align: right; }
+  details.card .inner { padding: 0 20px 20px 46px; color: var(--ink-2); max-width: 74ch; }
+  details.card .inner code {
+    font-family: var(--mono); font-size: .88em;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 4px; padding: 1px 5px;
+  }
+
+  /* mini before/after bars in the caching card */
+  .bars { margin-top: 16px; display: grid; gap: 8px; font-family: var(--mono); font-size: 12.5px; }
+  .bar-row { display: grid; grid-template-columns: 58px 1fr; align-items: center; gap: 12px; }
+  .bar-row .lbl { color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; font-size: 10.5px; }
+  .bar-track { display: flex; align-items: center; gap: 10px; }
+  .bar {
+    height: 14px; border-radius: 4px; background: var(--accent);
+    min-width: 3px;
+  }
+  .bar.ghost { opacity: .38; }
+  .bar-val { color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---------- stats strip ---------- */
+  .stats {
+    margin-top: 36px;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 16px 14px;
+  }
+  .stat .n {
+    font-family: var(--mono); font-weight: 700;
+    font-size: clamp(22px, 2.6vw, 30px);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink); line-height: 1.1;
+  }
+  .stat .n small { font-size: .55em; color: var(--ink-3); font-weight: 400; }
+  .stat .l {
+    margin-top: 6px; font-family: var(--mono); font-size: 10.5px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .stats-meta {
+    margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); display: none; }
+  .stats-meta.live .live-dot { display: inline-block; }
+
+  /* ---------- Q&A ---------- */
+  .qa { margin-top: 32px; display: grid; gap: 10px; max-width: 78ch; }
+  details.q { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+  details.q summary {
+    list-style: none; cursor: pointer; padding: 8px 0;
+    font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--ink);
+    display: flex; gap: 12px; align-items: baseline;
+  }
+  details.q summary::-webkit-details-marker { display: none; }
+  details.q summary::before { content: "?"; color: var(--accent); font-weight: 700; flex: none; }
+  details.q p { margin: 4px 0 8px 24px; color: var(--ink-2); max-width: 68ch; }
+
+  /* ---------- video slot ---------- */
+  .video-slot {
+    margin-top: 36px;
+    aspect-ratio: 16 / 9;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    display: grid; place-items: center;
+    background: var(--surface);
+  }
+  .video-slot .in { text-align: center; padding: 24px; }
+  .play-ring {
+    width: 64px; height: 64px; margin: 0 auto 16px;
+    border: 2px solid var(--accent); border-radius: 50%;
+    display: grid; place-items: center; color: var(--accent);
+    font-size: 20px;
+  }
+  .video-slot .cap { font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
+  .video-slot .cap b { color: var(--ink); }
+
+  /* ---------- footer ---------- */
+  footer.site {
+    margin-top: 88px; padding: 30px 0 44px;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink-2);
+  }
+  footer.site .row { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+  footer.site .tag-line { color: var(--ink-3); margin-top: 10px; font-size: 12.5px; }
+
+  /* ---------- reveal on scroll (hidden state only once JS is live) ---------- */
+  .js-anim .reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s ease; }
+  .js-anim .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-anim .reveal { opacity: 1; transform: none; transition: none; }
+    .cursor { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 860px) {
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    details.card summary .tease { display: none; }
+  }
+  @media (max-width: 540px) {
+    body { font-size: 16px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    #screen { font-size: 11.5px; }
+    .term-body { min-height: 460px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <!-- SWAP-ME: replace "Guy" with full name; add LinkedIn/GitHub links in nav and footer -->
+  <header class="site">
+    <div class="who"><b>Guy</b> <span>· solutions engineering</span></div>
+    <nav>
+      <a href="../">← about me</a>
+      <a href="mailto:eitzyswitzy@gmail.com">email</a>
+      <!-- SWAP-ME: <a href="https://linkedin.com/in/YOURHANDLE">linkedin</a>
+                    <a href="https://github.com/YOURHANDLE">github</a> -->
+      <button id="themeBtn" type="button" aria-label="Toggle color theme">theme</button>
+    </nav>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <p class="eyebrow">Case study · JobFinder</p>
+    <h1>By the time a job hits LinkedIn, it's days old with hundreds of applicants. <em>I wanted to be upstream of that.</em></h1>
+    <p class="sub prose">So I built JobFinder: it reads the applicant-tracking APIs behind 53 careers pages directly, scores every new posting with a local LLM against my profile, and delivers a ranked digest to Telegram — twice a day, before the crowd arrives.</p>
+
+    <div class="term reveal" id="termBox">
+      <div class="term-chrome">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="term-title">guy@mac — jobfinder — 92×28</span>
+        <button id="replayBtn" type="button">↻ replay</button>
+      </div>
+      <div class="term-body">
+        <pre id="screen" aria-hidden="true"></pre>
+        <p class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">
+          Animated terminal: a real JobFinder scan. 53 boards checked in about 4 seconds,
+          most answering HTTP 304 for zero bytes; 5 new matches scored 2–9 out of 10 by a
+          local LLM; digest delivered to Telegram, state saved only after delivery.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= INSIGHT ================= -->
+  <section class="reveal">
+    <p class="eyebrow">The insight</p>
+    <h2>Careers pages are frontends. Read the API instead.</h2>
+    <p class="prose" style="margin-top:18px">
+      Almost every careers page is a thin frontend over an applicant-tracking system — Greenhouse,
+      Lever, Ashby, Workday — each with a <strong>public JSON API designed for exactly this kind of read</strong>.
+      Going to the source means structured postings the moment they publish: no scraping, no HTML
+      parsing, no bot detection — just one small adapter per ATS.
+      Seven adapters now cover 53 companies plus two VC-portfolio network boards,
+      about <strong>4,300 postings per scan</strong>.
+    </p>
+  </section>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <section class="reveal">
+    <p class="eyebrow">Architecture</p>
+    <h2>One pipeline, end to end</h2>
+    <div class="pipe">
+      <div class="stage reveal">
+        <div class="node">txt</div>
+        <div class="body">
+          <div class="name">companies.txt</div>
+          <div class="desc">53 companies, one line each. Paste a careers URL and the scanner discovers the ATS + token by itself, validates it against the live API, and caches the result.</div>
+        </div>
+      </div>
+      <div class="stage reveal">
+        <div class="node">7×</div>
+        <div class="body">
+          <div class="name">ATS adapters</div>
+          <div class="desc">One small adapter per provider — direct boards plus two aggregated VC-network boards that cover companies with no reachable board of their own.</div>
+          <div class="tags">
+            <span class="tag">greenhouse</span><span class="tag">lever</span><span class="tag">ashby</span>
+            <span class="tag">comeet</span><span class="tag">workday</span><span class="tag">getro</span><span class="tag">consider</span>
+          </div>
+        </div>
+      </div>
+      <div class="stage reveal">
+        <div class="node">⇉</div>
+        <div class="body">
+          <div class="name">parallel fetcher</div>
+          <div class="desc">4 workers with per-host 1-second politeness spacing, 429 backoff, honest User-Agent. ETag / If-Modified-Since revalidation: unchanged boards answer 304 and cost zero bytes.</div>
+        </div>
+      </div>
+      <div class="stage reveal">
+        <div class="node">⌕</div>
+        <div class="body">
+          <div class="name">filters</div>
+          <div class="desc">Title keywords gate first, then Israeli locations, then domain excludes that cut the "Product Manager, Billing" noise a broad keyword lets through.</div>
+        </div>
+      </div>
+      <div class="stage reveal">
+        <div class="node">1–10</div>
+        <div class="body">
+          <div class="name">dual scoring</div>
+          <div class="desc">A fast keyword score against my skills profile, then a local LLM (qwen2.5:14b via Ollama) rates each new match 1–10 with reasoning and red flags. Free, private, provider-swappable.</div>
+        </div>
+      </div>
+      <div class="stage reveal">
+        <div class="node">✓</div>
+        <div class="body">
+          <div class="name">delivery-safe state</div>
+          <div class="desc">A job is never marked "seen" until the digest actually arrives. If delivery fails, the next scan re-reports — duplicates are possible, silence is not.</div>
+        </div>
+      </div>
+      <div class="stage reveal">
+        <div class="node">→</div>
+        <div class="body">
+          <div class="name">outputs</div>
+          <div class="desc">Ranked Telegram digest + an interactive bot (/check, /add, /pipeline), a Streamlit dashboard, and an auto-maintained application tracker with follow-up nudges.</div>
+          <div class="tags"><span class="tag">telegram bot</span><span class="tag">streamlit</span><span class="tag">applications.csv</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ENGINEERING DETAILS ================= -->
+  <section class="reveal">
+    <p class="eyebrow">Under the hood</p>
+    <h2>Three details engineers ask about</h2>
+    <div class="cards">
+
+      <details class="card">
+        <summary>
+          <span class="plus">+</span>
+          <h3>Delivery-safe state</h3>
+          <span class="tease">at-least-once, by design</span>
+        </summary>
+        <div class="inner">
+          <p><code>seen_jobs.json</code> is written only <em>after</em> <code>deliver_report()</code> returns.
+          If Telegram is down, the process crashes, or the network drops mid-send, nothing is marked seen —
+          every job re-reports on the next scan. That's a deliberate at-least-once choice:
+          in a job search, a duplicate notification costs three seconds; a silently dropped
+          posting can cost the opportunity.</p>
+        </div>
+      </details>
+
+      <details class="card">
+        <summary>
+          <span class="plus">+</span>
+          <h3>Company resolver with collision handling</h3>
+          <span class="tease">"Orca" could be three companies</span>
+        </summary>
+        <div class="inner">
+          <p>Adding a company takes one pasted careers URL. The scanner probes Greenhouse, Lever, and
+          Ashby by slug, <strong>validates the token against the live board</strong> before trusting it, and caches
+          the result (failures too, with a 3-day retry TTL). Validation matters because names collide —
+          "Orca" alone could be three different companies on three different ATSs.</p>
+          <p>The same discipline applies across sources: when a job appears both on a company's own board
+          and on a VC-network aggregator, <strong>the direct listing wins</strong> (matched on normalized
+          company + title), and an aggregator's careers-page copy beats its LinkedIn copy. One job,
+          one notification.</p>
+        </div>
+      </details>
+
+      <details class="card">
+        <summary>
+          <span class="plus">+</span>
+          <h3>HTTP-native caching</h3>
+          <span class="tease">unchanged boards cost 0 bytes</span>
+        </summary>
+        <div class="inner">
+          <p>Every board is revalidated with <code>ETag</code> / <code>If-Modified-Since</code>; an unchanged
+          board answers <code>304</code> and transfers nothing. The cache key includes a hash of the config,
+          so editing a keyword forces a clean refetch. Greenhouse gets an extra trick: fetch the light
+          job list first, then one ~12&nbsp;KB detail request per <em>matching</em> job only.</p>
+          <div class="bars" role="img" aria-label="Datadog transfer per scan: 5.1 megabytes before, 0.6 megabytes after — an 88 percent reduction">
+            <div class="bar-row">
+              <span class="lbl">before</span>
+              <span class="bar-track"><span class="bar ghost" style="width:88%"></span><span class="bar-val">5.1 MB / scan</span></span>
+            </div>
+            <div class="bar-row">
+              <span class="lbl">after</span>
+              <span class="bar-track"><span class="bar" style="width:10.4%"></span><span class="bar-val">0.6 MB — one board, −88%</span></span>
+            </div>
+          </div>
+          <p style="margin-bottom:0">Result: a warm scan of all 53 boards finishes in ~4 seconds.</p>
+        </div>
+      </details>
+
+    </div>
+  </section>
+
+  <!-- ================= STATS ================= -->
+  <section class="reveal">
+    <p class="eyebrow">By the numbers</p>
+    <h2>Real numbers, from the running system</h2>
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-companies">53</div><div class="l">companies tracked</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">ATS adapters</div></div>
+      <div class="stat"><div class="n" id="s-jobs">4,300<small>+</small></div><div class="l">postings / scan</div></div>
+      <div class="stat"><div class="n" id="s-warm">~4<small> s</small></div><div class="l">warm scan</div></div>
+      <div class="stat"><div class="n">2<small> / day</small></div><div class="l">scheduled scans</div></div>
+      <div class="stat"><div class="n">36</div><div class="l">offline tests</div></div>
+    </div>
+    <p class="stats-meta" id="statsMeta"><span class="live-dot"></span><span id="statsNote">Snapshot from the July 2026 build. When hosted next to the scanner, this strip reads live values from stats.json.</span></p>
+  </section>
+
+  <!-- ================= HARD QUESTIONS ================= -->
+  <section class="reveal">
+    <p class="eyebrow">The skeptic's corner</p>
+    <h2>Questions worth asking me</h2>
+    <div class="qa">
+      <details class="q">
+        <summary>Why not just scrape LinkedIn?</summary>
+        <p>LinkedIn is downstream — postings arrive there days late, and scraping it means fighting
+        bot detection while violating its terms. The ATS <em>is</em> the origin: first-party, structured
+        JSON, published the moment the role opens. Upstream beats faster-downstream.</p>
+      </details>
+      <details class="q">
+        <summary>Is calling these APIs actually allowed?</summary>
+        <p>They're public, unauthenticated endpoints built for careers-page embedding — the same calls
+        your browser makes when you open the page. JobFinder is deliberately polite about it: one light
+        request per company per scan (or a 0-byte 304), 1-second per-host spacing, backoff on 429,
+        an honest User-Agent, twice a day. A scan is less load than one human visitor.</p>
+      </details>
+      <details class="q">
+        <summary>Why a local LLM instead of a hosted API?</summary>
+        <p>Job-search data is personal, and at this scale (~5 s per new match on an M-series Mac)
+        a local qwen2.5:14b via Ollama is free, private, and plenty accurate — it correctly buries an
+        internal-facing "Product Manager" at 2/10 while ranking a Solutions Engineer role 9/10.
+        The provider is a config switch: Anthropic-backed scoring with structured output is already
+        implemented for when scale or quality demands it.</p>
+      </details>
+      <details class="q">
+        <summary>What breaks if Telegram is down?</summary>
+        <p>Nothing is lost. State saves only after delivery succeeds, so an outage means the same jobs
+        simply re-report on the next scheduled scan. The failure mode is a duplicate message,
+        never a missed posting — chosen deliberately, because the two costs aren't symmetric.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ================= VIDEO ================= -->
+  <section class="reveal">
+    <p class="eyebrow">Walkthrough</p>
+    <h2>The 3-minute demo</h2>
+    <!-- SWAP-ME (when the Phase-3 video is recorded):
+         replace .video-slot with either
+           <video controls poster="poster.jpg" style="width:100%;border-radius:12px"><source src="demo.mp4" type="video/mp4"></video>
+         or a YouTube embed:
+           <iframe style="width:100%;aspect-ratio:16/9;border:0;border-radius:12px" src="https://www.youtube-nocookie.com/embed/VIDEO_ID" title="JobFinder demo" allowfullscreen></iframe>
+    -->
+    <div class="video-slot">
+      <div class="in">
+        <div class="play-ring">▶</div>
+        <p class="cap"><b>Recording in progress.</b><br>Live scan · Telegram digest arriving · <span style="font-family:var(--mono)">/add</span> resolving a company's ATS on camera.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site">
+    <div class="row">
+      <span><b style="color:var(--ink)">Guy</b> · <a href="mailto:eitzyswitzy@gmail.com">eitzyswitzy@gmail.com</a></span>
+      <!-- SWAP-ME: repo link when public → <a href="https://github.com/YOURHANDLE/jobfinder">source ↗</a> -->
+      <span class="dim">Python · requests · Ollama · Telegram Bot API · Streamlit</span>
+    </div>
+    <p class="tag-line">Built July 2026, during a live job search — this tool found the interviews this page was made for.</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- theme toggle (system default, manual override) ---------- */
+  var root = document.documentElement;
+  var btn = document.getElementById("themeBtn");
+  try {
+    var saved = localStorage.getItem("jf-theme");
+    if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+  } catch (e) {}
+  btn.addEventListener("click", function () {
+    var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var cur = root.getAttribute("data-theme") || (systemDark ? "dark" : "light");
+    var next = cur === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("jf-theme", next); } catch (e) {}
+  });
+
+  /* ---------- scroll reveals ---------- */
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var revealEls = document.querySelectorAll(".reveal");
+  if (!reduced && "IntersectionObserver" in window) document.body.classList.add("js-anim");
+  if (reduced || !("IntersectionObserver" in window)) {
+    revealEls.forEach(function (el) { el.classList.add("in"); });
+  } else {
+    var ro = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); ro.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(function (el) { ro.observe(el); });
+    /* failsafe: never leave content hidden if observer callbacks misfire */
+    setTimeout(function () {
+      revealEls.forEach(function (el) { el.classList.add("in"); });
+    }, 2500);
+  }
+
+  /* ---------- terminal replay ---------- */
+  var screen = document.getElementById("screen");
+  var termBox = document.getElementById("termBox");
+  var replayBtn = document.getElementById("replayBtn");
+
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  function ok(s)    { return '<span class="ok">' + esc(s) + "</span>"; }
+  function amber(s) { return '<span class="amber">' + esc(s) + "</span>"; }
+  function cyan(s)  { return '<span class="cyan">' + esc(s) + "</span>"; }
+  function dim(s)   { return '<span class="dim">' + esc(s) + "</span>"; }
+  function hd(s)    { return '<span class="hd">' + esc(s) + "</span>"; }
+
+  function pad(s, n) { while (s.length < n) s += " "; return s; }
+
+  function board(name, ats, rest) {
+    return "  " + esc(pad(name, 18)) + dim(pad(ats, 12)) + rest;
+  }
+
+  var PROMPT = dim("guy@mac jobfinder % ");
+  var CMD = "python job_scanner.py";
+
+  /* [html, delay-before-ms] */
+  var LINES = [
+    [dim("JobFinder v3 · 53 companies · 7 ATS adapters · 4 workers · per-host 1s spacing"), 420],
+    ["", 60],
+    [board("Wiz", "greenhouse", ok("304") + dim(" unchanged · skipped · 0 B")), 220],
+    [board("MongoDB", "greenhouse", ok("304") + dim(" unchanged · skipped · 0 B")), 90],
+    [board("Datadog", "greenhouse", cyan("200") + " · 1,204 jobs · " + amber("3 match") + dim(" · light list + ~12 KB/match")), 420],
+    [board("JFrog", "greenhouse", ok("304") + dim(" unchanged · skipped · 0 B")), 90],
+    [board("Snowflake", "ashby", cyan("200") + " · 418 jobs · " + amber("2 match")), 380],
+    [board("monday.com", "ashby", ok("304") + dim(" unchanged · skipped · 0 B")), 90],
+    [board("Gong", "greenhouse", ok("304") + dim(" unchanged · skipped · 0 B")), 80],
+    [board("NVIDIA", "workday", cyan("200") + " · 231 IL jobs · " + amber("1 match")), 430],
+    [board("Israel VC Forum", "getro", cyan("200") + " · 1,427 jobs " + dim("· aggregated network board")), 460],
+    [board("TechAviv", "consider", cyan("200") + " · 1,175 jobs " + dim("· aggregated network board")), 430],
+    [dim("  … 43 more boards") + "            " + ok("41× 304") + dim(" · zero bytes transferred"), 350],
+    ["", 120],
+    ["  " + hd("dedupe") + "   " + dim("direct listings win over aggregator copies · 2 collapsed"), 260],
+    ["  " + hd("enrich") + "   " + dim("descriptions fetched for matching aggregated jobs · cached forever"), 240],
+    ["", 120],
+    ["  " + hd("scoring 5 new matches") + dim(" · local LLM · qwen2.5:14b @ 127.0.0.1:11434"), 550],
+    ["", 100],
+    [dim("  #  LLM   ROLE                            COMPANY      NOTES"), 240],
+    ["  1  " + amber("9/10") + "  Solutions Engineer              Snowflake    " + dim("customer-facing, POC-heavy"), 360],
+    ["  2  " + amber("9/10") + "  Solutions Architect             MongoDB      " + dim("pre-sales + hands-on data work"), 300],
+    ["  3  " + amber("8/10") + "  BI & AI Solution Engineer       monday.com   " + dim("technical demos, LLM features"), 300],
+    ["  4  " + amber("8/10") + "  Principal Solutions Engineer    Wiz          " + ok("referral on file → ranked first"), 340],
+    ["  5  " + dim("2/10  Product Manager, Billing        (buried)     internal-facing · correctly filtered"), 320],
+    ["", 140],
+    ["  digest → Telegram " + ok("✓") + "   " + dim("state saved after delivery — nothing marked seen until it arrived"), 420],
+    ["  " + hd("done in 4.1 s") + dim(" · warm scan · 49 of 53 boards cost zero bytes"), 300]
+  ];
+
+  var timers = [];
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+  var played = false;
+
+  function renderInstant() {
+    var out = PROMPT + esc(CMD) + "\n";
+    LINES.forEach(function (l) { out += l[0] + "\n"; });
+    screen.innerHTML = out + PROMPT + '<span class="cursor"></span>';
+  }
+
+  function play() {
+    clearTimers();
+    played = true;
+    if (reduced) { renderInstant(); return; }
+
+    var typed = 0;
+    screen.innerHTML = PROMPT + '<span class="cursor"></span>';
+
+    function typeCmd() {
+      typed++;
+      screen.innerHTML = PROMPT + esc(CMD.slice(0, typed)) + '<span class="cursor"></span>';
+      if (typed < CMD.length) later(typeCmd, 34 + Math.random() * 40);
+      else later(function () { emit(0, PROMPT + esc(CMD) + "\n"); }, 320);
+    }
+
+    function emit(i, acc) {
+      if (i >= LINES.length) {
+        screen.innerHTML = acc + PROMPT + '<span class="cursor"></span>';
+        return;
+      }
+      later(function () {
+        var next = acc + LINES[i][0] + "\n";
+        screen.innerHTML = next + '<span class="cursor"></span>';
+        emit(i + 1, next);
+      }, LINES[i][1]);
+    }
+
+    later(typeCmd, 350);
+  }
+
+  replayBtn.addEventListener("click", play);
+
+  if ("IntersectionObserver" in window && !reduced) {
+    var to = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting && !played) { play(); to.unobserve(en.target); }
+      });
+    }, { threshold: 0.3 });
+    to.observe(termBox);
+    setTimeout(function () { if (!played) play(); }, 2500);
+  } else {
+    renderInstant();
+  }
+
+  /* ---------- live stats (graceful fallback to baked snapshot) ----------
+     To go live: have job_scanner.py write stats.json next to this file, e.g.
+     {"companies": 53, "jobs_per_scan": 4310, "warm_scan_seconds": 4.1,
+      "last_scan": "2026-07-15T10:00:03+03:00"}                              */
+  fetch("stats.json", { cache: "no-store" })
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .then(function (s) {
+      if (s.companies) document.getElementById("s-companies").textContent = s.companies;
+      if (s.jobs_per_scan) document.getElementById("s-jobs").textContent = Number(s.jobs_per_scan).toLocaleString("en-US");
+      if (s.warm_scan_seconds) document.getElementById("s-warm").innerHTML = s.warm_scan_seconds + "<small> s</small>";
+      var meta = document.getElementById("statsMeta");
+      meta.classList.add("live");
+      var when = s.last_scan ? new Date(s.last_scan) : null;
+      document.getElementById("statsNote").textContent =
+        "Live from the running scanner" + (when ? " · last scan " + when.toLocaleString() : "") + ".";
+    })
+    .catch(function () { /* keep the baked snapshot */ });
+}());
+</script>
+</body>
+</html>
