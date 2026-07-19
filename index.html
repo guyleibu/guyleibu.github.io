@@ -387,14 +387,6 @@
   }
   .chip.hot { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
 
-  /* ---------- ask me about ---------- */
-  .ask { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px; }
-  .ask .q {
-    font-family: var(--mono); font-size: 13px; color: var(--ink);
-    border: 1px dashed var(--ink-3); border-radius: 10px; padding: 9px 15px;
-  }
-  .ask .q::before { content: "? "; color: var(--accent); font-weight: 700; }
-
   /* ---------- footer ---------- */
   footer.site {
     margin-top: 96px; padding: 30px 0 46px; border-top: 1px solid var(--border);
@@ -678,19 +670,6 @@
       Full engineering write-up — architecture, delivery-safe state, the caching numbers —
       <a href="case-study/">in the case study →</a>
     </p>
-  </div>
-
-  <!-- ================= ASK ME ================= -->
-  <div class="sub">
-    <p class="eyebrow">Interview fuel</p>
-    <h2>Ask me about any of these.</h2>
-    <div class="ask reveal">
-      <span class="q">why a job is never "seen" until the digest arrives</span>
-      <span class="q">how "Orca" could be three companies</span>
-      <span class="q">cutting one board from 5.1 MB to 0.6 MB per scan</span>
-      <span class="q">why the LLM runs on my own machine</span>
-      <span class="q">being polite to 53 APIs, twice a day</span>
-    </div>
   </div>
 
   </section>
