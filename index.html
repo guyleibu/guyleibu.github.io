@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Guy — customer-facing engineer. I didn't refresh job boards; I built a pipeline that reads them at the source and pings my phone while postings are still warm.">
-<title>Guy — the job market pings my phone</title>
+<meta name="description" content="Guy — customer-facing solutions engineer in Tel Aviv. Demos, POCs, production fires — and a featured project: a job-search pipeline that reads career boards at the source.">
+<title>Guy — Solutions Engineer</title>
 </head>
 <body>
 <style>
@@ -118,6 +118,7 @@
   .prose { max-width: 64ch; color: var(--ink-2); }
   .prose strong { color: var(--ink); }
   section { padding: 84px 0 0; }
+  .sub { padding: 84px 0 0; }  /* sub-block inside the featured-project section */
 
   /* ---------- header ---------- */
   header.site {
@@ -165,9 +166,8 @@
   .btn.ghost { color: var(--ink); border: 1px solid var(--border); background: var(--surface); }
   .btn.ghost:hover { text-decoration: none; border-color: var(--ink-3); }
 
-  /* portrait — SWAP-ME: replace the placeholder inside .portrait with
-     <img src="data:image/jpeg;base64,..." alt="Guy"> (keep it inline/base64
-     so the page stays self-contained) */
+  /* portrait — image served from assets/photo.jpg (GitHub Pages serves the
+     file directly; replace the file to update the photo) */
   .portrait-frame { position: relative; max-width: 320px; justify-self: end; width: 100%; }
   .portrait-frame::before {
     content: ""; position: absolute; inset: -14px -14px auto auto;
@@ -428,13 +428,13 @@
 
 <div class="wrap">
 
-  <!-- SWAP-ME: replace "Guy" with full name; add LinkedIn/GitHub URLs -->
+  <!-- SWAP-ME: replace "Guy" with full name; set the real LinkedIn handle -->
   <header class="site">
     <div class="who"><b>Guy</b> <span>· solutions engineering</span></div>
     <nav>
       <a href="mailto:eitzyswitzy@gmail.com">email</a>
-      <!-- SWAP-ME: <a href="https://linkedin.com/in/YOURHANDLE">linkedin</a>
-                    <a href="https://github.com/YOURHANDLE">github</a> -->
+      <a href="https://www.linkedin.com/in/SWAP-ME">linkedin</a>
+      <a href="assets/cv.pdf" target="_blank" rel="noopener">cv</a>
       <button id="themeBtn" type="button" aria-label="Toggle color theme">theme</button>
     </nav>
   </header>
@@ -446,28 +446,91 @@
       <h1>Hi, I'm Guy.<br>I put engineering <span class="ember">in front of customers.</span></h1>
       <p class="lede prose">
         Discovery calls, demos, POCs, production fires — the seam between the product and the people
-        using it is where I do my best work. And when I needed a new role, I didn't refresh job boards:
-        <strong>I built a pipeline that reads them at the source</strong> and pings my phone while
-        postings are still warm.
+        using it is where I do my best work.
       </p>
       <!-- SWAP-ME: add 1–2 sentences of career facts here (years, last role/company, education) -->
       <div class="hero-ctas">
         <a class="btn hot" href="mailto:eitzyswitzy@gmail.com">Get in touch</a>
-        <a class="btn ghost" href="#proof">See the machine ↓</a>
+        <a class="btn ghost" href="assets/cv.pdf" target="_blank" rel="noopener">View CV ↗</a>
+        <a class="btn ghost" href="#jobfinder">Featured project ↓</a>
       </div>
     </div>
     <div class="portrait-frame">
-      <!-- SWAP-ME: replace .placeholder with
-           <img src="data:image/jpeg;base64,..." alt="Portrait of Guy">   -->
+      <!-- photo lives at assets/photo.jpg — replace that file to update the portrait -->
       <div class="portrait">
-        <div class="placeholder">
-          <div class="mono-g">G</div>
-          <div class="cap">photo goes here</div>
-        </div>
+        <img src="assets/photo.jpg" alt="Portrait of Guy">
       </div>
-      <div class="portrait-caption">// portrait · 4:5 · swap-me</div>
+      <div class="portrait-caption">// tel aviv · solutions engineering</div>
     </div>
   </section>
+
+  <!-- ================= WHAT I BRING ================= -->
+  <section>
+    <p class="eyebrow">What I bring</p>
+    <h2>Three rooms I'm useful in.</h2>
+    <div class="pillars reveal">
+      <div class="pillar">
+        <span class="num">/pre-sales</span>
+        <h3>Run the room</h3>
+        <p>Discovery calls, live demos, POCs that close. I translate customer requirements into
+        platform capabilities — and platform limits back into honest answers.</p>
+      </div>
+      <div class="pillar">
+        <span class="num">/post-sales</span>
+        <h3>Own the relationship</h3>
+        <p>Onboarding, production troubleshooting, adoption, escalations. The customer's technical
+        voice inside the company, and the company's calmest voice inside the incident.</p>
+      </div>
+      <div class="pillar">
+        <span class="num">/hands-on</span>
+        <h3>Build the thing</h3>
+        <p>Integrations, data pipelines, ML workflows, deployments on the customer's cloud.
+        JobFinder below is what that looks like when nobody's watching: I had a problem, so I shipped a system.</p>
+      </div>
+    </div>
+
+    <div class="skill-groups reveal">
+      <div class="skill-group">
+        <span class="g">cloud &amp; infra</span>
+        <span class="chips">
+          <span class="chip">Kubernetes</span><span class="chip">EKS / AKS</span><span class="chip">AWS</span>
+          <span class="chip">Azure</span><span class="chip">OpenTelemetry</span><span class="chip">observability</span>
+        </span>
+      </div>
+      <div class="skill-group">
+        <span class="g">data &amp; ML</span>
+        <span class="chips">
+          <span class="chip">Python</span><span class="chip">SQL</span><span class="chip">ETL / data pipelines</span>
+          <span class="chip">MLOps</span><span class="chip">ML platforms</span><span class="chip">Power BI</span><span class="chip">A/B testing</span>
+        </span>
+      </div>
+      <div class="skill-group">
+        <span class="g">genai</span>
+        <span class="chips">
+          <span class="chip hot">LLM scoring in prod</span><span class="chip">LangChain</span>
+          <span class="chip">local models · Ollama</span><span class="chip">prompt + eval design</span>
+        </span>
+      </div>
+      <div class="skill-group">
+        <span class="g">customer craft</span>
+        <span class="chips">
+          <span class="chip hot">demos &amp; POCs</span><span class="chip">discovery</span><span class="chip">pre-sales</span>
+          <span class="chip">troubleshooting</span><span class="chip">escalation management</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FEATURED PROJECT: JOBFINDER ================= -->
+  <section id="jobfinder">
+    <p class="eyebrow">Featured project</p>
+    <h2>JobFinder — <span class="ember">the job market pings my phone.</span></h2>
+    <p class="prose" style="margin-top:16px">
+      When I needed a new role, I didn't refresh job boards: <strong>I built a pipeline that reads
+      them at the source</strong> — 53 companies, 7 ATS APIs, a local LLM scoring every match —
+      and pings my phone while postings are still warm. Everything below is real and runs twice a day.
+      Full write-up <a href="case-study/">in the case study →</a>
+    </p>
 
   <!-- ================= TICKER ================= -->
   <div class="ticker-wrap" aria-hidden="true">
@@ -486,7 +549,7 @@
   </div>
 
   <!-- ================= TELEGRAM ================= -->
-  <section id="oven">
+  <div class="sub" id="oven">
     <p class="eyebrow">The deliverable</p>
     <h2>Hot from the oven, <span class="ember">straight to my phone.</span></h2>
     <div class="tg-grid">
@@ -560,10 +623,10 @@
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- ================= ENGINE / TERMINAL ================= -->
-  <section id="proof">
+  <div class="sub" id="proof">
     <p class="eyebrow">The engine</p>
     <h2>Under the hood: read the source, cache like you mean it.</h2>
     <p class="prose" style="margin-top:16px">
@@ -609,67 +672,10 @@
       Full engineering write-up — architecture, delivery-safe state, the caching numbers —
       <a href="case-study/">in the case study →</a>
     </p>
-  </section>
-
-  <!-- ================= WHAT I BRING ================= -->
-  <section>
-    <p class="eyebrow">What I bring</p>
-    <h2>Three rooms I'm useful in.</h2>
-    <div class="pillars reveal">
-      <div class="pillar">
-        <span class="num">/pre-sales</span>
-        <h3>Run the room</h3>
-        <p>Discovery calls, live demos, POCs that close. I translate customer requirements into
-        platform capabilities — and platform limits back into honest answers.</p>
-      </div>
-      <div class="pillar">
-        <span class="num">/post-sales</span>
-        <h3>Own the relationship</h3>
-        <p>Onboarding, production troubleshooting, adoption, escalations. The customer's technical
-        voice inside the company, and the company's calmest voice inside the incident.</p>
-      </div>
-      <div class="pillar">
-        <span class="num">/hands-on</span>
-        <h3>Build the thing</h3>
-        <p>Integrations, data pipelines, ML workflows, deployments on the customer's cloud.
-        JobFinder is what that looks like when nobody's watching: I had a problem, so I shipped a system.</p>
-      </div>
-    </div>
-
-    <div class="skill-groups reveal">
-      <div class="skill-group">
-        <span class="g">cloud &amp; infra</span>
-        <span class="chips">
-          <span class="chip">Kubernetes</span><span class="chip">EKS / AKS</span><span class="chip">AWS</span>
-          <span class="chip">Azure</span><span class="chip">OpenTelemetry</span><span class="chip">observability</span>
-        </span>
-      </div>
-      <div class="skill-group">
-        <span class="g">data &amp; ML</span>
-        <span class="chips">
-          <span class="chip">Python</span><span class="chip">SQL</span><span class="chip">ETL / data pipelines</span>
-          <span class="chip">MLOps</span><span class="chip">ML platforms</span><span class="chip">Power BI</span><span class="chip">A/B testing</span>
-        </span>
-      </div>
-      <div class="skill-group">
-        <span class="g">genai</span>
-        <span class="chips">
-          <span class="chip hot">LLM scoring in prod</span><span class="chip">LangChain</span>
-          <span class="chip">local models · Ollama</span><span class="chip">prompt + eval design</span>
-        </span>
-      </div>
-      <div class="skill-group">
-        <span class="g">customer craft</span>
-        <span class="chips">
-          <span class="chip hot">demos &amp; POCs</span><span class="chip">discovery</span><span class="chip">pre-sales</span>
-          <span class="chip">troubleshooting</span><span class="chip">escalation management</span>
-        </span>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <!-- ================= ASK ME ================= -->
-  <section>
+  <div class="sub">
     <p class="eyebrow">Interview fuel</p>
     <h2>Ask me about any of these.</h2>
     <div class="ask reveal">
@@ -679,13 +685,16 @@
       <span class="q">why the LLM runs on my own machine</span>
       <span class="q">being polite to 53 APIs, twice a day</span>
     </div>
+  </div>
+
   </section>
 
   <!-- ================= FOOTER ================= -->
   <footer class="site">
     <div class="row">
-      <span><b style="color:var(--ink)">Guy</b> · <a href="mailto:eitzyswitzy@gmail.com">eitzyswitzy@gmail.com</a></span>
-      <!-- SWAP-ME: linkedin / github / public repo links -->
+      <span><b style="color:var(--ink)">Guy</b> · <a href="mailto:eitzyswitzy@gmail.com">email</a>
+        · <a href="https://www.linkedin.com/in/SWAP-ME">linkedin</a>
+        · <a href="assets/cv.pdf" target="_blank" rel="noopener">cv</a></span>
       <span>Python · requests · Ollama · Telegram Bot API · Streamlit</span>
     </div>
     <p class="tag-line">Built July 2026, mid-job-search — the tool on this page found the interview you're prepping for.</p>
