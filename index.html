@@ -289,6 +289,16 @@
     .about-photo { max-width: 300px; }
     .fineprint { text-align: left; }
   }
+  /* phone: trim to the essentials - drop the stats ticker row, collapse
+     each work card to title + tags (no mockup art, no paragraph), and
+     drop the longer About paragraph (keep the one-line tagline) */
+  @media (max-width: 640px) {
+    .stats-row { display: none; }
+    .cards { gap: 22px; }
+    .card .thumb, .card p { display: none; }
+    .card h3 { margin-top: 0; }
+    .about-copy { display: none; }
+  }
   @media (max-width: 540px) {
     header.site nav { gap: 18px; font-size: 13.5px; }
     .ticker { font-size: 18px; }
@@ -398,7 +408,7 @@
         <span>Palo Alto Networks</span><span class="fire">●</span><span>Mobileye</span><span class="fire">●</span>
       </div>
     </div>
-    <div class="ticker-wrap">
+    <div class="ticker-wrap stats-row">
       <div class="ticker rev">
         <span>53 companies tracked</span><span>·</span><span>7 ATS adapters</span><span>·</span>
         <span>~4,300 postings a scan</span><span>·</span><span>warm scan in ~4 s</span><span>·</span>
