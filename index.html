@@ -77,10 +77,21 @@
     color: var(--accent);
   }
   .logo b { display: block; color: var(--ink); }
-  header.site nav { display: flex; gap: 30px; font-size: 14.5px; }
+  header.site nav {
+    display: flex; align-items: center; flex-wrap: wrap;
+    justify-content: flex-end; gap: 22px; row-gap: 8px; font-size: 14.5px;
+  }
   header.site nav a { color: var(--ink-2); }
   header.site nav a:hover { color: var(--ink); text-decoration: none; }
   header.site nav a.cta { color: var(--accent); }
+  header.site nav a.nav-cv {
+    display: inline-flex; align-items: center;
+    font-family: var(--mono); font-size: 13px; color: #fff;
+    background: linear-gradient(100deg, var(--heat-a), var(--heat-b));
+    border-radius: 999px; padding: 6px 16px;
+    box-shadow: 0 8px 20px -10px rgba(224, 52, 43, .55);
+  }
+  header.site nav a.nav-cv:hover { color: #fff; filter: brightness(1.08); text-decoration: none; }
 
   /* ---------- hero ---------- */
   .hero {
@@ -247,10 +258,13 @@
   .about-copy { margin: 24px 0 0; color: var(--ink-2); max-width: 58ch; }
   .about-copy strong { color: var(--ink); font-weight: 600; }
   .resume-link {
-    display: inline-block; margin-top: 30px; font-family: var(--mono); font-size: 14px;
-    letter-spacing: .04em; color: var(--ink);
+    display: inline-block; margin-top: 30px;
+    font-family: var(--mono); font-size: 14px; letter-spacing: .04em; color: #fff;
+    border-radius: 999px; padding: 12px 26px;
+    background: linear-gradient(100deg, var(--heat-a), var(--heat-b));
+    box-shadow: 0 16px 34px -16px rgba(224, 52, 43, .6);
   }
-  .resume-link:hover { color: var(--accent); text-decoration: none; }
+  .resume-link:hover { color: #fff; filter: brightness(1.08); text-decoration: none; }
 
   /* ---------- footer ---------- */
   footer.site { margin-top: 120px; border-top: 1px solid var(--border); padding: 44px 0 40px; }
@@ -306,6 +320,7 @@
     <nav>
       <a href="#work">My work</a>
       <a href="#about">About me</a>
+      <a class="nav-cv" href="assets/Guy_Leibu_CV_Solution_Engineer_2026.pdf" target="_blank" rel="noopener">CV</a>
       <a class="cta" href="mailto:Guyleibu@gmail.com">Get in touch</a>
     </nav>
   </div>
@@ -469,7 +484,7 @@ Snowflake   <span class="cy">200</span> <span class="dm">· 418 jobs</span> <spa
           and fluent in the customer craft around them: POCs that close, honest answers about
           platform limits, calm voices inside incidents.
         </p>
-        <a class="resume-link" href="assets/Guy_Leibu_CV_Solution_Engineer_2026.pdf" target="_blank" rel="noopener">View CV →</a>
+        <a class="resume-link" href="assets/Guy_Leibu_CV_Solution_Engineer_2026.pdf" target="_blank" rel="noopener">View CV</a>
       </div>
     </div>
   </section>
