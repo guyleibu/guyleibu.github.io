@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Guy Leibu — customer-facing solutions engineer in Tel Aviv. Discovery calls, demos, POCs, production fires.">
+<title>Guy Leibu — Solutions Engineer</title>
+</head>
+<body>
+<style>
+  /* ============================================================
+     TOKENS — "hot from the oven": warm cream ↔ charcoal, ember accent
+     ============================================================ */
+  :root {
+    --bg:        #FBF6EF;
+    --surface:   #FFFFFF;
+    --surface-2: #F3EBDF;
+    --border:    #E8DFD3;
+    --ink:       #241E1A;
+    --ink-2:     #6E6259;
+    --ink-3:     #A2938A;
+    --accent:    #C2401B;
+    --accent-soft: #C2401B1A;
+    --heat-a:    #FF6A3D;
+    --heat-b:    #E0342B;
+    --ok:        #1E7D4F;
+
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --wrap: 1020px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:        #16120F;
+      --surface:   #1D1814;
+      --surface-2: #241E19;
+      --border:    #352C25;
+      --ink:       #F2EAE2;
+      --ink-2:     #B3A497;
+      --ink-3:     #7E7166;
+      --accent:    #FF7A50;
+      --accent-soft: #FF7A5022;
+      --ok:        #46C280;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:        #16120F;
+    --surface:   #1D1814;
+    --surface-2: #241E19;
+    --border:    #352C25;
+    --ink:       #F2EAE2;
+    --ink-2:     #B3A497;
+    --ink-3:     #7E7166;
+    --accent:    #FF7A50;
+    --accent-soft: #FF7A5022;
+    --ok:        #46C280;
+  }
+  :root[data-theme="light"] {
+    --bg:        #FBF6EF;
+    --surface:   #FFFFFF;
+    --surface-2: #F3EBDF;
+    --border:    #E8DFD3;
+    --ink:       #241E1A;
+    --ink-2:     #6E6259;
+    --ink-3:     #A2938A;
+    --accent:    #C2401B;
+    --accent-soft: #C2401B1A;
+    --ok:        #1E7D4F;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- type ---------- */
+  .eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 14px;
+  }
+  h1 {
+    font-weight: 850; font-size: clamp(34px, 6vw, 62px);
+    letter-spacing: -0.035em; line-height: 1.05; margin: 0; text-wrap: balance;
+  }
+  h2 {
+    font-weight: 800; font-size: clamp(24px, 3.4vw, 34px);
+    letter-spacing: -0.025em; line-height: 1.15; margin: 0; text-wrap: balance;
+  }
+  h1 .ember, h2 .ember {
+    background: linear-gradient(100deg, var(--heat-a), var(--heat-b));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .prose { max-width: 64ch; color: var(--ink-2); }
+  .prose strong { color: var(--ink); }
+  section { padding: 84px 0 0; }
+
+  /* ---------- header ---------- */
+  header.site {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+    padding: 26px 0 0; font-family: var(--mono); font-size: 14px;
+  }
+  header.site .who b { color: var(--ink); }
+  header.site .who span { color: var(--ink-3); }
+  header.site nav { display: flex; align-items: center; gap: 18px; }
+  #themeBtn {
+    font-family: var(--mono); font-size: 12px; background: none;
+    border: 1px solid var(--border); color: var(--ink-2);
+    border-radius: 999px; padding: 4px 12px; cursor: pointer;
+  }
+  #themeBtn:hover { border-color: var(--ink-3); color: var(--ink); }
+
+  /* ---------- hero ---------- */
+  .hero { padding-top: 64px; display: grid; grid-template-columns: 1.25fr .75fr; gap: 48px; align-items: center; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: .04em;
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 999px; padding: 6px 14px; color: var(--ink-2); margin-bottom: 22px;
+  }
+  .status-pill .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ok); animation: pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(70,194,128,.5); }
+    70% { box-shadow: 0 0 0 9px rgba(70,194,128,0); }
+    100% { box-shadow: 0 0 0 0 rgba(70,194,128,0); }
+  }
+  .hero .lede { margin: 24px 0 0; font-size: 18px; }
+  .hero-ctas { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    font-family: var(--mono); font-size: 13.5px; border-radius: 8px;
+    padding: 11px 20px; display: inline-block;
+  }
+  .btn.hot {
+    color: #fff; background: linear-gradient(100deg, var(--heat-a), var(--heat-b));
+    box-shadow: 0 10px 24px -12px rgba(224,52,43,.55);
+  }
+  .btn.hot:hover { text-decoration: none; filter: brightness(1.06); }
+  .btn.ghost { color: var(--ink); border: 1px solid var(--border); background: var(--surface); }
+  .btn.ghost:hover { text-decoration: none; border-color: var(--ink-3); }
+
+  /* portrait — image served from assets/photo.jpg (GitHub Pages serves the
+     file directly; replace the file to update the photo) */
+  .portrait-frame { position: relative; max-width: 320px; justify-self: end; width: 100%; }
+  .portrait-frame::before {
+    content: ""; position: absolute; inset: -14px -14px auto auto;
+    width: 74%; height: 74%; border-radius: 26px;
+    background: linear-gradient(120deg, var(--heat-a), var(--heat-b));
+    opacity: .18; z-index: 0; transform: rotate(3deg);
+  }
+  .portrait {
+    position: relative; z-index: 1; aspect-ratio: 4 / 5; border-radius: 22px;
+    border: 1px solid var(--border); background:
+      radial-gradient(120% 90% at 20% 10%, var(--accent-soft), transparent 60%),
+      var(--surface-2);
+    display: grid; place-items: center; overflow: hidden;
+  }
+  .portrait img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .portrait .placeholder { text-align: center; padding: 18px; }
+  .portrait .placeholder .mono-g {
+    font-family: var(--mono); font-weight: 700; font-size: 84px; line-height: 1;
+    background: linear-gradient(120deg, var(--heat-a), var(--heat-b));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .portrait .placeholder .cap {
+    margin-top: 12px; font-family: var(--mono); font-size: 11px;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .portrait-caption {
+    margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+    text-align: right;
+  }
+
+  /* ---------- pillars ---------- */
+  .pillars { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .pillar { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .pillar .num {
+    font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .1em;
+  }
+  .pillar h3 { margin: 10px 0 8px; font-size: 18px; letter-spacing: -.015em; }
+  .pillar p { margin: 0; color: var(--ink-2); font-size: 15px; }
+
+  .skill-groups { margin-top: 34px; display: grid; gap: 18px; }
+  .skill-group { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: baseline; }
+  .skill-group .g {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 12.5px; color: var(--ink-2);
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 999px; padding: 4px 12px;
+  }
+  .chip.hot { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+  /* ---------- footer ---------- */
+  footer.site {
+    margin-top: 96px; padding: 30px 0 46px; border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 13.5px; color: var(--ink-2);
+  }
+  footer.site .row { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+  footer.site .tag-line { color: var(--ink-3); margin-top: 10px; font-size: 12.5px; }
+
+  /* ---------- reveal ---------- */
+  .js-anim .reveal { opacity: 0; transform: translateY(14px); transition: opacity .55s ease, transform .55s ease; }
+  .js-anim .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-anim .reveal { opacity: 1; transform: none; transition: none; }
+    .js-anim .msg:not(.typing) { opacity: 1; transform: none; }
+    .cursor { animation: none; }
+    .ticker { animation: none; }
+    .status-pill .dot { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; }
+    .portrait-frame { justify-self: start; max-width: 260px; }
+    .tg-grid { grid-template-columns: 1fr; }
+    .phone { margin: 0 auto; transform: none; }
+    .pillars { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: repeat(3, 1fr); }
+    .skill-group { grid-template-columns: 1fr; gap: 6px; }
+  }
+  @media (max-width: 540px) {
+    body { font-size: 16px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    #screen { font-size: 11.5px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="site">
+    <div class="who"><b>Guy Leibu</b> <span>· solutions engineering</span></div>
+    <nav>
+      <a href="mailto:eitzyswitzy@gmail.com">email</a>
+      <a href="https://www.linkedin.com/in/guy-leibu">linkedin</a>
+      <a href="../assets/Guy_Leibu_CV_Solution_Engineer_2026.pdf" target="_blank" rel="noopener">cv</a>
+      <button id="themeBtn" type="button" aria-label="Toggle color theme">theme</button>
+    </nav>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero" style="padding-top:64px">
+    <div>
+      <span class="status-pill"><span class="dot"></span> open to Solution Engineering roles · Tel Aviv</span>
+      <h1>Hi, I'm Guy.<br>I put engineering <span class="ember">in front of customers.</span></h1>
+      <p class="lede prose">
+        Discovery calls, demos, POCs, production fires — the seam between the product and the people
+        using it is where I do my best work.
+      </p>
+      <!-- SWAP-ME: add 1–2 sentences of career facts here (years, last role/company, education) -->
+      <div class="hero-ctas">
+        <a class="btn hot" href="mailto:eitzyswitzy@gmail.com">Get in touch</a>
+        <a class="btn ghost" href="../assets/Guy_Leibu_CV_Solution_Engineer_2026.pdf" target="_blank" rel="noopener">View CV ↗</a>
+      </div>
+    </div>
+    <div class="portrait-frame">
+      <!-- photo lives at assets/photo.jpg — replace that file to update the portrait -->
+      <div class="portrait">
+        <img src="../assets/photo.jpg" alt="Portrait of Guy Leibu">
+      </div>
+      <div class="portrait-caption">// tel aviv · solutions engineering</div>
+    </div>
+  </section>
+
+  <!-- ================= WHAT I BRING ================= -->
+  <section>
+    <p class="eyebrow">What I bring</p>
+    <h2>Three rooms I'm useful in.</h2>
+    <div class="pillars reveal">
+      <div class="pillar">
+        <span class="num">/pre-sales</span>
+        <h3>Run the room</h3>
+        <p>Discovery calls, live demos, POCs that close. I translate customer requirements into
+        platform capabilities — and platform limits back into honest answers.</p>
+      </div>
+      <div class="pillar">
+        <span class="num">/post-sales</span>
+        <h3>Own the relationship</h3>
+        <p>Onboarding, production troubleshooting, adoption, escalations. The customer's technical
+        voice inside the company, and the company's calmest voice inside the incident.</p>
+      </div>
+      <div class="pillar">
+        <span class="num">/hands-on</span>
+        <h3>Build the thing</h3>
+        <p>Integrations, data pipelines, ML workflows, deployments on the customer's cloud.
+        JobFinder is what that looks like when nobody's watching: I had a problem, so I shipped a system.</p>
+      </div>
+    </div>
+
+    <div class="skill-groups reveal">
+      <div class="skill-group">
+        <span class="g">cloud &amp; infra</span>
+        <span class="chips">
+          <span class="chip">Kubernetes</span><span class="chip">EKS / AKS</span><span class="chip">AWS</span>
+          <span class="chip">Azure</span><span class="chip">OpenTelemetry</span><span class="chip">observability</span>
+        </span>
+      </div>
+      <div class="skill-group">
+        <span class="g">data &amp; ML</span>
+        <span class="chips">
+          <span class="chip">Python</span><span class="chip">SQL</span><span class="chip">ETL / data pipelines</span>
+          <span class="chip">MLOps</span><span class="chip">ML platforms</span><span class="chip">Power BI</span><span class="chip">A/B testing</span>
+        </span>
+      </div>
+      <div class="skill-group">
+        <span class="g">genai</span>
+        <span class="chips">
+          <span class="chip hot">LLM scoring in prod</span><span class="chip">LangChain</span>
+          <span class="chip">local models · Ollama</span><span class="chip">prompt + eval design</span>
+        </span>
+      </div>
+      <div class="skill-group">
+        <span class="g">customer craft</span>
+        <span class="chips">
+          <span class="chip hot">demos &amp; POCs</span><span class="chip">discovery</span><span class="chip">pre-sales</span>
+          <span class="chip">troubleshooting</span><span class="chip">escalation management</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="site">
+    <div class="row">
+      <span><b style="color:var(--ink)">Guy Leibu</b> · <a href="mailto:eitzyswitzy@gmail.com">email</a>
+        · <a href="https://www.linkedin.com/in/guy-leibu">linkedin</a>
+        · <a href="../assets/Guy_Leibu_CV_Solution_Engineer_2026.pdf" target="_blank" rel="noopener">cv</a></span>
+      <span>Python · requests · Ollama · Telegram Bot API · Streamlit</span>
+    </div>
+    <p class="tag-line">Open to Solution Engineering / Sales Engineering / TAM roles in Tel Aviv.</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- theme ---------- */
+  var root = document.documentElement;
+  var btn = document.getElementById("themeBtn");
+  try {
+    var saved = localStorage.getItem("jf-theme");
+    if (saved === "dark" || saved === "light") root.setAttribute("data-theme", saved);
+  } catch (e) {}
+  btn.addEventListener("click", function () {
+    var systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var cur = root.getAttribute("data-theme") || (systemDark ? "dark" : "light");
+    var next = cur === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("jf-theme", next); } catch (e) {}
+  });
+
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var hasIO = "IntersectionObserver" in window;
+  if (!reduced && hasIO) document.body.classList.add("js-anim");
+
+  /* ---------- section reveals (+failsafe) ---------- */
+  var revealEls = document.querySelectorAll(".reveal");
+  if (reduced || !hasIO) {
+    revealEls.forEach(function (el) { el.classList.add("in"); });
+  } else {
+    var ro = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add("in"); ro.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(function (el) { ro.observe(el); });
+    setTimeout(function () { revealEls.forEach(function (el) { el.classList.add("in"); }); }, 2500);
+  }
+}());
+</script>
+</body>
+</html>
