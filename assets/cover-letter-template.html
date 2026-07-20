@@ -1,0 +1,195 @@
+<!--
+  Cover letter template — matches the visual design of Guy_Leibu_CV_Solution_Engineer_2026.pdf
+  (dark sidebar, same name/role header treatment, same typeface stack and rules).
+
+  HOW TO USE (for an AI or a human filling this per job description):
+  Every bracketed token below, e.g. [Job Title], is meant to be replaced wholesale.
+  Fixed content (name, phone, email, LinkedIn, portfolio) should NOT change between
+  applications — only the bracketed tokens and the four body paragraphs change.
+  Each fillable block also carries a data-field attribute naming it, in case a script
+  prefers to target elements directly instead of doing a full-text token replace.
+
+  Token list:
+    [Job Title]                — role being applied for (drives the header subtitle + RE line)
+    [Date]                      — application date
+    [Hiring Manager's Name]    — or omit the two manager-block lines and open with "Hiring Team"
+    [Hiring Manager's Title]
+    [Company Name]
+    [Company Address]
+    data-field="intro"          — how you found the listing + current status + enthusiasm
+    data-field="body1"          — 1-2 achievements from the CV mapped to this job's core requirements, with numbers
+    data-field="body2"          — why this company specifically (mission / recent work / values fit)
+    data-field="conclusion"     — reiterate interest, point to attached CV/resume, request interview, thank them
+
+  Print to PDF: File > Print > Save as PDF in a browser; @page below sets US Letter with
+  zero margin so the dark sidebar bleeds to the edge, same as the CV.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Guy Leibu — Cover Letter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --sub:#6f6f6f;
+    --sidebar:#262626;
+    --sidebar-text:#e9e9e9;
+    --sidebar-muted:#b7b7b7;
+    --rule:#d9d9d9;
+    --accent:#3a3a3a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Segoe UI', Calibri, Tahoma, Geneva, Verdana, sans-serif;
+    color:var(--ink);
+    background:#fff;
+    font-size:14px;
+    line-height:1.55;
+  }
+  .page{
+    display:flex;
+    max-width:850px;
+    margin:0 auto;
+    min-height:1100px;
+  }
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    flex:0 0 240px;
+    background:var(--sidebar);
+    color:var(--sidebar-text);
+    padding:40px 26px;
+  }
+  .sidebar h2{
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    font-weight:700;
+    margin:0 0 10px;
+    padding-bottom:6px;
+    border-bottom:1px solid rgba(255,255,255,.25);
+  }
+  .sidebar .contact-line{
+    font-size:13px;
+    color:var(--sidebar-muted);
+    margin:0 0 8px;
+    word-break:break-word;
+  }
+  .sidebar .contact-line a{ color:var(--sidebar-muted); text-decoration:none; }
+  .sidebar .block{ margin-bottom:30px; }
+  /* ---------- main content ---------- */
+  .main{
+    flex:1 1 auto;
+    padding:44px 48px;
+  }
+  .header h1{
+    margin:0;
+    font-size:28px;
+    font-weight:800;
+    color:var(--ink);
+  }
+  .header h1 .role{
+    font-weight:400;
+    color:var(--sub);
+  }
+  .header .applying-for{
+    margin:6px 0 0;
+    font-size:14px;
+    color:var(--sub);
+  }
+  .rule{
+    border:none;
+    border-top:2px solid var(--accent);
+    margin:16px 0 26px;
+  }
+  .letter-meta p{ margin:0 0 2px; font-size:13.5px; }
+  .letter-meta{ margin-bottom:22px; }
+  .salutation{ margin:0 0 4px; }
+  .re-line{
+    font-weight:700;
+    margin:0 0 20px;
+  }
+  .body p{ margin:0 0 16px; text-align:left; }
+  .placeholder{
+    color:#8a8a8a;
+    font-style:italic;
+  }
+  .sign-off{ margin-top:6px; }
+  .sign-off .name{ font-weight:700; margin-top:36px; }
+
+  @media print{
+    @page{ size: letter; margin:0; }
+    body{ font-size:13px; }
+    .page{ min-height:auto; }
+  }
+  @media (max-width:700px){
+    .page{ flex-direction:column; }
+    .sidebar{ flex:0 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- fixed contact block — same content as the CV sidebar, does not change per application -->
+  <aside class="sidebar">
+    <div class="block">
+      <h2>Contact</h2>
+      <p class="contact-line">+972 543448251</p>
+      <p class="contact-line"><a href="mailto:Guyleibu@gmail.com">Guyleibu@gmail.com</a></p>
+      <p class="contact-line"><a href="https://linkedin.com/in/guy-leibu">linkedin.com/in/guy-leibu</a></p>
+      <p class="contact-line"><a href="https://guyleibu.github.io">guyleibu.github.io</a></p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="header">
+      <h1>Guy Leibu <span class="role">| Cover Letter</span></h1>
+      <p class="applying-for">Application for <span class="placeholder" data-field="job_title">[Job Title]</span> at <span class="placeholder" data-field="company_name">[Company Name]</span></p>
+    </div>
+    <hr class="rule">
+
+    <div class="letter-meta">
+      <p class="placeholder" data-field="date">[Date]</p>
+      <p class="placeholder" data-field="manager_name">[Hiring Manager's Name]</p>
+      <p class="placeholder" data-field="manager_title">[Hiring Manager's Title]</p>
+      <p class="placeholder" data-field="company_name">[Company Name]</p>
+      <p class="placeholder" data-field="company_address">[Company Address]</p>
+    </div>
+
+    <p class="salutation">Dear <span class="placeholder" data-field="salutation_name">[Hiring Manager's Name, or "Hiring Team" if unknown]</span>,</p>
+    <p class="re-line">RE: Application for <span class="placeholder" data-field="job_title_re">[Job Title]</span></p>
+
+    <div class="body">
+      <p data-field="intro" class="placeholder">
+        [Introduction: state the position and where you saw it listed, briefly introduce your
+        current role, and express genuine enthusiasm for this specific opportunity.]
+      </p>
+      <p data-field="body1" class="placeholder">
+        [Why you're the right fit: pull one or two concrete achievements from the CV — Solution
+        Engineer work at McKinsey/Iguazio or Solution Product Manager work at SAP Labs — that map
+        directly onto this job's core responsibilities. Use real numbers or outcomes where possible.]
+      </p>
+      <p data-field="body2" class="placeholder">
+        [Why this company: reference something specific about their mission, product, or recent
+        work, and connect it to why this role fits your goals — not generic flattery.]
+      </p>
+      <p data-field="conclusion" class="placeholder">
+        [Conclusion: restate interest in the role, point to the attached CV, ask for an interview,
+        and thank them for their time.]
+      </p>
+    </div>
+
+    <div class="sign-off">
+      <p>Sincerely,</p>
+      <p class="name">Guy Leibu</p>
+    </div>
+  </main>
+
+</div>
+
+</body>
+</html>
